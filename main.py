@@ -2,16 +2,20 @@ import cv2
 import numpy as np
 import serial
 
-COM = 'COM4'
+COM = 'COM4'    
 BAUD = 9600
 ser = serial.Serial(COM, BAUD)
 MAX_CAMERA_WIDTH_RESOLUTION = 614
-MAX_CAMERA_HEIGHT_RESOLUTION = 1093
-MAX_POSSIBLE_DEGREES = 180
+MAX_CAMERA_HEIGHT_RESOLUTION = 420
+MAX_HORIZONTAL_POSSIBLE_DEGREES = 180
+MAX_VERTICAL_POSSIBLE_DEGREES = 90
+STEPS = 5
 
 cap = cv2.VideoCapture(0)
 azulBajo = np.array([90, 100, 20], np.uint8)
 azulAlto = np.array([120, 255, 255], np.uint8)
+last_height_degrees = 0
+last_width_degrees = 0
 while True:
     ret, frame = cap.read()
     if ret:
@@ -22,6 +26,7 @@ while True:
         cv2.drawContours(frame, contornos, -1, (255, 0, 0), 4)
 
         for c in contornos:
+            # print("WTFFFFFFF", last_height_degrees, last_width_degrees)
             area = cv2.contourArea(c)
             if area > 6000:
                 M = cv2.moments(c)
@@ -35,30 +40,22 @@ while True:
                 nuevoContorno = cv2.convexHull(c)
                 cv2.drawContours(frame, [nuevoContorno], 0, (255, 0, 0), 3)
 
-                # if x < 200:
-                #     print("Mover a la izquierda 100%")
-                #     ser.write(b"izq1\n")
-                # elif 420 > x >= 200:
-                #     print("Mover a la izquierda 60%")
-                #     ser.write(b"izq2\n")
-                # elif 520 > x >= 420:
-                #     print("Mover a la izquierda 30%")
-                #     ser.write(b"izq3\n")
-                # # Mover al centro
-                # elif 520 <= x < 650:
-                #     print("Mover al centro")
-                #     ser.write(b"ctr\n")
-                # elif 650 <= x < 860:
-                #     print("moviendo a la derecha 30%")
-                #     ser.write(b"der3\n")
-                # elif 860 <= x < 1080:
-                #     print("moviendo a la derecha 60%")
-                #     ser.write(b"der2\n")
-                # elif x >= 1080:
-                #     print("Moviendo a la derecha 100%")
-                #     ser.write(b"der1\n")
-                print((x*MAX_POSSIBLE_DEGREES)/MAX_CAMERA_WIDTH_RESOLUTION)
-                print(y*MAX_POSSIBLE_DEGREES/MAX_CAMERA_HEIGHT_RESOLUTION)
+                current_width_degrees = min(round(round((x*MAX_HORIZONTAL_POSSIBLE_DEGREES)/MAX_CAMERA_WIDTH_RESOLUTION)/STEPS)*STEPS, MAX_HORIZONTAL_POSSIBLE_DEGREES)
+                current_height_degrees = min(round(round((y*MAX_VERTICAL_POSSIBLE_DEGREES)/MAX_CAMERA_HEIGHT_RESOLUTION)/STEPS)*STEPS,MAX_VERTICAL_POSSIBLE_DEGREES) 
+
+                if (last_height_degrees == current_height_degrees) and (last_width_degrees == current_width_degrees):
+                    # print("NO SE DEBERIA MOVER")
+                    continue
+
+                print("EJE X: ")
+                print(last_width_degrees, current_width_degrees, last_width_degrees == current_width_degrees)
+                print("EJE Y: ")
+                print(last_height_degrees, current_height_degrees, last_height_degrees == current_height_degrees)
+                
+                last_height_degrees = current_height_degrees
+                last_width_degrees = current_width_degrees
+                print("Moviendo a la posicion: ", current_width_degrees, current_height_degrees)
+                ser.write((str(last_height_degrees) + "@" + str(last_width_degrees) + "#").encode())
 
         # cv2.imshow('mascaraAzul', mascara)
         cv2.imshow('frame', frame)
