@@ -5,6 +5,9 @@ import serial
 COM = 'COM4'
 BAUD = 9600
 ser = serial.Serial(COM, BAUD)
+MAX_CAMERA_WIDTH_RESOLUTION = 614
+MAX_CAMERA_HEIGHT_RESOLUTION = 1093
+MAX_POSSIBLE_DEGREES = 180
 
 cap = cv2.VideoCapture(0)
 azulBajo = np.array([90, 100, 20], np.uint8)
@@ -54,7 +57,8 @@ while True:
                 # elif x >= 1080:
                 #     print("Moviendo a la derecha 100%")
                 #     ser.write(b"der1\n")
-                print((x*180)/614)
+                print((x*MAX_POSSIBLE_DEGREES)/MAX_CAMERA_WIDTH_RESOLUTION)
+                print(y*MAX_POSSIBLE_DEGREES/MAX_CAMERA_HEIGHT_RESOLUTION)
 
         # cv2.imshow('mascaraAzul', mascara)
         cv2.imshow('frame', frame)
