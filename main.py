@@ -12,8 +12,8 @@ MAX_VERTICAL_POSSIBLE_DEGREES = 90
 STEPS = 5
 
 cap = cv2.VideoCapture(0)
-azulBajo = np.array([90, 100, 20], np.uint8)
-azulAlto = np.array([120, 255, 255], np.uint8)
+azulBajo = np.array([160, 100, 20], np.uint8)
+azulAlto = np.array([180, 255, 255], np.uint8)
 last_height_degrees = 0
 last_width_degrees = 0
 while True:
